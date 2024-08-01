@@ -1,47 +1,24 @@
 <template>
     <div class="appLayout">
-        <div class="title">
-            Prolish
+        <div class="top fc">
+            
+            <div class="title">
+                Prolish
+            </div>
+            <div class="progress">
+                <div class="progressIcon spin" v-if="globalLoading">
+                    refresh
+                </div>
+            </div>
         </div>
-            <div class="sentenceLayout">
+        <div class="sentenceLayout">
                 <div class="sentenceArea">
-                    <div class="sentence">{{sentenceData.sentence}}</div>
-                    <div class="control">
-                        <button @click="refreshSentence">刷新</button>
-                        <button @click="sentenceData.settings = !sentenceData.settings">{{sentenceData.settings? '完成设置': '设置'}}</button>
-                    </div>
-                    <div class="sentenceSetting" v-if="sentenceData.settings">
-                        口语化/日常交流：
-                        <select v-model="sentenceData.requestData.colloquial">
-                            <option>随机</option>
-                            <option>是</option>
-                            <option>否</option>
-                        </select><br>
-                        情感：
-                        <select v-model="sentenceData.requestData.emotion">
-                            <option>随机</option>
-                            <option>积极</option>
-                            <option>消极</option>
-                        </select><br>
-                        类型：
-                        <select v-model="sentenceData.requestData.type">
-                            <option>随机</option>
-                            <option>陈述句</option>
-                            <option>疑问句</option>
-                            <option>祈使句</option>
-                            <option>感叹句</option>
-                        </select><br>
-                        长度：<input type="text" placeholder="默认是60字以内" v-model.number="sentenceData.requestData.size"></input><br>
-                        自定义：
-                        <textarea v-model="sentenceData.requestData.custom">自定义内容</textarea>
-                    </div>
+                    <div v-if="!sentenceData.loading" class="sentence">{{sentenceData.sentence}}</div>
+                    <div v-else class="sentence">加载中...</div>
                 </div>
                 <div class="inputArea">
                     <div class="userInput">
                         <textarea placeholder="请输入翻译" rows="3" v-model="answerData.requestData.translation" />
-                    </div>
-                    <div class="control">
-                        <button @click="submitSentence">提交</button>
                     </div>
                 </div>
                 <div class="answerArea">
@@ -62,42 +39,63 @@
             </div>
         <div class="nav">
             <div class="menuItem fc" @click="refreshSentence">
-                <div class="menuItemWrapper">
-                    <div class="icon">refresh</div>
-                    <div class="text">刷新</div>
-                </div>
+                <div class="icon">refresh</div>
             </div>
             <div class="menuItem fc" @click="submitSentence">
-                <div class="menuItemWrapper">
-                    <div class="icon">check</div>
-                    <div class="text">提交</div>
-                </div>
+                <div class="icon">check</div>
             </div>
             <div class="menuItem fc" @click="sentenceData.settings = !sentenceData.settings">
-                <div class="menuItemWrapper">
-                    <div class="icon">settings</div>
-                    <div class="text">设置</div>
-                </div>
+                <div class="icon">settings</div>
             </div>
         </div>
+        <EDrawer v-model:status="sentenceData.settings" title="设置">
+            <div class="settings">
+                <table>
+                    <tr class="settingsItem">
+                        <th>字数</th><td><ERange v-model:value="sentenceData.requestData.size" /></td>
+                    </tr>
+                    <tr class="settingsItem">
+                        <th>情感</th><td><ESelect :data="['随机', '积极', '消极']" v-model:value="sentenceData.requestData.emotion"/></td>
+                    </tr>
+                    <tr class="settingsItem">
+                        <th>风格</th><td><ESelect :data="['随机', '正式', '口语']" v-model:value="sentenceData.requestData.style"/></td>
+                    </tr>
+                    <tr class="settingsItem">
+                        <th>句式</th><td><ESelect :data="['随机', '陈述', '感叹', '疑问', '祈使']" v-model:value="sentenceData.requestData.type"/></td>
+                    </tr>
+                    <tr class="settingsItem">
+                        <th>自定义</th><td><EInput v-model:value="sentenceData.requestData.custom"/></td>
+                    </tr>
+                </table>
+            </div>
+        </EDrawer>
+        
+        
     </div>
 </template>
 
 <script setup>
 import {ref, reactive, onMounted, toRaw} from "vue";
 import {generateSentenceApi, submitSentenceApi} from "@/api/sentence.js";
+import EDrawer from "@/components/EDrawer.vue";
+import EInput from "@/components/EInput.vue";
+import ERange from "@/components/ERange.vue";
+import ESelect from "@/components/ESelect.vue";
+
+let globalLoading = ref(false);
 
 let sentenceData = reactive({
     sentence: null,
     requestData: {
-        "colloquial": "随机",
+        "style": "随机",
         "emotion": "随机",
         "type": "随机",
         "size": 60,
         "custom": "",
         "id": null
     },
-    settings: false
+    settings: false,
+    loading: false
 });
 
 let answerData = reactive({
@@ -123,8 +121,12 @@ let answerData = reactive({
 })
 
 const refreshSentence = async () => {
+    sentenceData.loading = true;
+    globalLoading.value = true;
     let response = await generateSentenceApi(toRaw(sentenceData.requestData));
     sentenceData.sentence = response.data.data;
+    globalLoading.value = false;
+    sentenceData.loading = false;
 }
 
 const submitSentence = async () => {
@@ -134,15 +136,28 @@ const submitSentence = async () => {
 }
 
 onMounted(async () => {
+
 })
 
 </script>
 
 <style lang="scss" scoped>
+.spin {
+    animation: rotate 2s linear infinite;
+}
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .appLayout {
     width: 375px;
     overflow-x: hidden;
-    .title {
+    .top {
         position: fixed;
         left: 0;
         right: 0;
@@ -152,9 +167,19 @@ onMounted(async () => {
         background:
             linear-gradient(to bottom, transparent, #fff 100%),
             linear-gradient(to right, #c2c2f6, #d4bcef, #c2c2f6);
+        .title {
+        
+        }
+        .progress {
+            margin-left: auto;
+            .progressIcon {
+                font-family: Icon;
+                color: black;
+            }
+        }
     }
     .sentenceLayout {
-        padding: 55px 0 70px 0;
+        padding: 55px 0 60px 0;
         .sentenceArea {
             padding: 10px;
             .sentence {
@@ -198,7 +223,7 @@ onMounted(async () => {
     }
     .nav {
         z-index: 100;
-        height: 70px;
+        height: 60px;
         backdrop-filter: blur(8px);
         background-color: rgba(255, 255, 255, 0.5);
         position: fixed;
@@ -207,19 +232,26 @@ onMounted(async () => {
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         display: flex;
         align-items: center;
+        user-select: none;
         .menuItem {
-            margin: 10px;
             width: 125px;
             height: 100%;
             color: black;
             .icon {
                 font-family: Icon;
                 font-size: 30px;
-                padding-bottom: 5px;
             }
-            .text {
-                font-size: 13px;
-                text-align: center;
+        }
+    }
+    .settings {
+        padding: 10px;
+        .settingsItem {
+            height: 50px;
+            th {
+                width: 80px;
+            }
+            td {
+                width: 295px;
             }
         }
     }

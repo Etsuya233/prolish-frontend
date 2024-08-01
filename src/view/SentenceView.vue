@@ -29,7 +29,7 @@
                 </select><br>
                 长度：<input type="text" placeholder="默认是60字以内" v-model.number="sentenceData.requestData.size"></input><br>
                 自定义：
-                <textarea v-model="sentenceData.requestData.custom">自定义内容</textarea>
+                <textarea v-model:="sentenceData.requestData.custom">自定义内容</textarea>
             </div>
         </div>
         <div class="inputArea">
