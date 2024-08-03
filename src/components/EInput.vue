@@ -28,7 +28,7 @@ const value = defineModel('value');
             border-radius: 10px;
             padding: 10px;
             width: 100%;
-            
+            transition: border 0.2s;
         }
         input:focus {
             border: 2px solid rgb(112, 112, 112);

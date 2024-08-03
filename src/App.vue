@@ -1,40 +1,59 @@
 <template>
     <div class="appLayout">
         <div class="top fc">
-            
             <div class="title">
                 Prolish
             </div>
             <div class="progress">
-                <div class="progressIcon spin" v-if="globalLoading">
-                    refresh
-                </div>
+                <ETransitionFade>
+                    <div class="progressIcon spin" v-if="globalLoading">
+                        refresh
+                    </div>
+                </ETransitionFade>
             </div>
         </div>
         <div class="sentenceLayout">
                 <div class="sentenceArea">
-                    <div v-if="!sentenceData.loading" class="sentence">{{sentenceData.sentence}}</div>
-                    <div v-else class="sentence">加载中...</div>
+                    <textarea v-model="sentenceData.sentence" rows="4"></textarea>
                 </div>
                 <div class="inputArea">
                     <div class="userInput">
-                        <textarea placeholder="请输入翻译" rows="3" v-model="answerData.requestData.translation" />
+                        <textarea placeholder="请输入翻译" rows="4" v-model="answerData.requestData.translation" />
                     </div>
                 </div>
-                <div class="answerArea">
-                    总分：{{answerData.data.total}}<br/>
-                    准确度：{{answerData.data.accuracy.score}}<br/>
-                    完整度：{{answerData.data.completeness}}<br/>
-                    流畅度：{{answerData.data.fluency}}<br/>
-                    地道度：{{answerData.data.naturalness}}<br/>
-                    矫正翻译：{{answerData.data.optimizedTranslation}}<br/>
-                    地道翻译：{{answerData.data.naturalTranslation}}<br/>
-                    <div class="mistake" v-for="mis in answerData.data.accuracy.analysis.data" >
-                        <hr>
-                        {{mis.title}}<br/>
-                        {{mis.position}}<br/>
-                        {{mis.reason}}<br/>
-                    </div>
+                <div class="answerAreaV2">
+                    <EList>
+                        <EListProgressItem :percentage="answerData.data.total / 5">总分：{{roundBy2(answerData.data.total)}}</EListProgressItem>
+                    </EList>
+                    <EList>
+                        <EListProgressItem :percentage="answerData.data.accuracy.score / 5">准确度：{{roundBy2(answerData.data.accuracy.score)}}</EListProgressItem>
+                        <EListProgressItem :percentage="answerData.data.completeness / 5">完整度：{{roundBy2(answerData.data.completeness)}}</EListProgressItem>
+                        <EListProgressItem :percentage="answerData.data.fluency / 5">流畅度：{{roundBy2(answerData.data.fluency)}}</EListProgressItem>
+                        <EListProgressItem :percentage="answerData.data.naturalness / 5">地道度：{{roundBy2(answerData.data.naturalness)}}</EListProgressItem>
+                    </EList>
+                    <EList v-if="(answerData.data.optimizedTranslation !== null && answerData.data.optimizedTranslation !== '') || (answerData.data.naturalTranslation !== null && answerData.data.naturalTranslation !== '')">
+                        <EListItem v-if="answerData.data.optimizedTranslation !== null && answerData.data.optimizedTranslation !== ''">
+                            <div class="translation">
+                                <div class="title">优化翻译</div>
+                                <div class="content">{{answerData.data.optimizedTranslation}}</div>
+                            </div>
+                        </EListItem>
+                        <EListItem>
+                            <div class="translation" v-if="answerData.data.naturalTranslation !== null && answerData.data.naturalTranslation !== ''">
+                                <div class="title">地道翻译</div>
+                                <div class="content">{{answerData.data.optimizedTranslation}}</div>
+                            </div>
+                        </EListItem>
+                    </EList>
+                    <EList v-if="answerData.data.accuracy.analysis.data !== null && answerData.data.accuracy.analysis.data.length > 0">
+                        <EListItem v-for="obj in answerData.data.accuracy.analysis.data">
+                            <div class="mis">
+                                <div class="title">{{obj.title}}</div>
+                                <div class="subtitle">{{obj.position}}</div>
+                                <div class="content">{{obj.reason}}</div>
+                            </div>
+                        </EListItem>
+                    </EList>
                 </div>
             </div>
         <div class="nav">
@@ -81,6 +100,10 @@ import EDrawer from "@/components/EDrawer.vue";
 import EInput from "@/components/EInput.vue";
 import ERange from "@/components/ERange.vue";
 import ESelect from "@/components/ESelect.vue";
+import EListItem from "@/components/EListItem.vue";
+import EList from "@/components/EList.vue";
+import EListProgressItem from "@/components/EListProgressItem.vue";
+import ETransitionFade from "@/components/ETransitionFade.vue";
 
 let globalLoading = ref(false);
 
@@ -90,7 +113,7 @@ let sentenceData = reactive({
         "style": "随机",
         "emotion": "随机",
         "type": "随机",
-        "size": 60,
+        "size": 40,
         "custom": "",
         "id": null
     },
@@ -130,13 +153,19 @@ const refreshSentence = async () => {
 }
 
 const submitSentence = async () => {
+    globalLoading.value = true;
     answerData.requestData.origin = sentenceData.sentence;
     let response = await submitSentenceApi(toRaw(answerData.requestData));
     answerData.data = response.data.data;
+    globalLoading.value = false;
+}
+
+const roundBy2 = (num) => {
+    return Math.round((num + Number.EPSILON) * 100) / 100;
 }
 
 onMounted(async () => {
-
+    await refreshSentence();
 })
 
 </script>
@@ -166,7 +195,8 @@ onMounted(async () => {
         font-weight: bold;
         background:
             linear-gradient(to bottom, transparent, #fff 100%),
-            linear-gradient(to right, #c2c2f6, #d4bcef, #c2c2f6);
+            linear-gradient(to right, rgba(194, 194, 246, 0.7), rgba(212, 188, 239, 0.7), rgba(194, 194, 246, 0.7));
+        backdrop-filter: blur(10px);
         .title {
         
         }
@@ -180,10 +210,22 @@ onMounted(async () => {
     }
     .sentenceLayout {
         padding: 55px 0 60px 0;
+        textarea {
+            outline: none;
+            width: 100%;
+            padding: 10px;
+            font-size: 20px;
+            border: 2px solid rgb(213, 213, 213);
+            border-radius: 10px;
+            transition: border 0.2s;
+            &:focus {
+                border: 2px solid #666666;
+            }
+        }
         .sentenceArea {
             padding: 10px;
             .sentence {
-                font-size: 25px;
+                font-size: 20px;
             }
             .control {
                 display: flex;
@@ -197,17 +239,9 @@ onMounted(async () => {
             }
         }
         .inputArea {
-            padding: 10px;
-            width: 375px;
+            padding: 0 10px;
             .userInput {
                 width: 100%;
-                textarea {
-                    width: 100%;
-                    padding: 10px;
-                    font-size: 25px;
-                    border: 2px solid;
-                    border-radius: 10px;
-                }
             }
             .control {
                 display: flex;
@@ -220,11 +254,33 @@ onMounted(async () => {
             background-color: #F5EDED;
             padding: 10px;
         }
+        .answerAreaV2 {
+            padding: 0 10px;
+            & > * {
+                margin: 10px 0;
+            }
+            .translation {
+                display: flex;
+                flex-direction: column;
+                .title {
+                    font-weight: bold;
+                }
+            }
+            .mis {
+                .title {
+                    font-weight: bold;
+                }
+                .subtitle {
+                    font-size: 15px;
+                    color: #666666;
+                }
+            }
+        }
     }
     .nav {
         z-index: 100;
         height: 60px;
-        backdrop-filter: blur(8px);
+        backdrop-filter: blur(20px);
         background-color: rgba(255, 255, 255, 0.5);
         position: fixed;
         bottom: 0;
@@ -237,6 +293,10 @@ onMounted(async () => {
             width: 125px;
             height: 100%;
             color: black;
+            transition: transform 0.2s;
+            &:active {
+                transform: scale(0.9);
+            }
             .icon {
                 font-family: Icon;
                 font-size: 30px;

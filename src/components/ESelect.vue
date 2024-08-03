@@ -48,6 +48,7 @@ onMounted(() => {
         padding: 10px 0;
         border-left: rgb(213, 213, 213) 2px solid;
         text-align: center;
+        transition: background-color 0.2s ease;
         &:not(:first-child) {
             border-left: rgb(213, 213, 213) 2px solid;
         }
