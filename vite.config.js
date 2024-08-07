@@ -8,26 +8,30 @@ const loder_pxtovw = pxtovw({
   viewportUnit: 'vw'
 })
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [vue()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src/'),
-    }
-  },
-  css: {
-    postcss: {
-      plugins: [loder_pxtovw]
-    }
-  },
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8080', // 目标服务器地址
+const proxyConfig = {
+  '/api': {
+    target: 'http://localhost:8080', // 目标服务器地址
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
+  }
+}
+
+// https://vitejs.dev/config/
+export default defineConfig(({mode}) => {
+  return {
+    plugins: [vue()],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src/'),
       }
+    },
+    css: {
+      postcss: {
+        plugins: [loder_pxtovw]
+      }
+    },
+    server: {
+      proxy: mode === 'development' ? proxyConfig : null
     }
   }
-})
+});

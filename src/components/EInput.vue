@@ -4,13 +4,14 @@
 <!--        -->
 <!--        </div>-->
         <div class="inputArea">
-            <input type="text" v-model="value" />
+            <input type="text" v-model="value" :placeholder="props.placeholder"/>
         </div>
     </div>
 </template>
 
 <script setup>
 const value = defineModel('value');
+const props = defineProps(['placeholder']);
 </script>
 
 <style scoped lang="scss">

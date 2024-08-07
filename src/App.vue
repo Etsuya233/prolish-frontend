@@ -13,49 +13,49 @@
             </div>
         </div>
         <div class="sentenceLayout">
-                <div class="sentenceArea">
-                    <textarea v-model="sentenceData.sentence" rows="4"></textarea>
-                </div>
-                <div class="inputArea">
-                    <div class="userInput">
-                        <textarea placeholder="请输入翻译" rows="4" v-model="answerData.requestData.translation" />
-                    </div>
-                </div>
-                <div class="answerAreaV2">
-                    <EList>
-                        <EListProgressItem :percentage="answerData.data.total / 5">总分：{{roundBy2(answerData.data.total)}}</EListProgressItem>
-                    </EList>
-                    <EList>
-                        <EListProgressItem :percentage="answerData.data.accuracy.score / 5">准确度：{{roundBy2(answerData.data.accuracy.score)}}</EListProgressItem>
-                        <EListProgressItem :percentage="answerData.data.completeness / 5">完整度：{{roundBy2(answerData.data.completeness)}}</EListProgressItem>
-                        <EListProgressItem :percentage="answerData.data.fluency / 5">流畅度：{{roundBy2(answerData.data.fluency)}}</EListProgressItem>
-                        <EListProgressItem :percentage="answerData.data.naturalness / 5">地道度：{{roundBy2(answerData.data.naturalness)}}</EListProgressItem>
-                    </EList>
-                    <EList v-if="(answerData.data.optimizedTranslation !== null && answerData.data.optimizedTranslation !== '') || (answerData.data.naturalTranslation !== null && answerData.data.naturalTranslation !== '')">
-                        <EListItem v-if="answerData.data.optimizedTranslation !== null && answerData.data.optimizedTranslation !== ''">
-                            <div class="translation">
-                                <div class="title">优化翻译</div>
-                                <div class="content">{{answerData.data.optimizedTranslation}}</div>
-                            </div>
-                        </EListItem>
-                        <EListItem>
-                            <div class="translation" v-if="answerData.data.naturalTranslation !== null && answerData.data.naturalTranslation !== ''">
-                                <div class="title">地道翻译</div>
-                                <div class="content">{{answerData.data.optimizedTranslation}}</div>
-                            </div>
-                        </EListItem>
-                    </EList>
-                    <EList v-if="answerData.data.accuracy.analysis.data !== null && answerData.data.accuracy.analysis.data.length > 0">
-                        <EListItem v-for="obj in answerData.data.accuracy.analysis.data">
-                            <div class="mis">
-                                <div class="title">{{obj.title}}</div>
-                                <div class="subtitle">{{obj.position}}</div>
-                                <div class="content">{{obj.reason}}</div>
-                            </div>
-                        </EListItem>
-                    </EList>
+            <div class="sentenceArea">
+                <textarea v-model="sentenceData.sentence" rows="4"></textarea>
+            </div>
+            <div class="inputArea">
+                <div class="userInput">
+                    <textarea placeholder="请输入翻译" rows="4" v-model="answerData.requestData.translation" />
                 </div>
             </div>
+            <div class="answerAreaV2">
+                <EList>
+                    <EListProgressItem :percentage="answerData.data.total / 5">总分：{{roundBy2(answerData.data.total)}}</EListProgressItem>
+                </EList>
+                <EList>
+                    <EListProgressItem :percentage="answerData.data.accuracy.score / 5">准确度：{{roundBy2(answerData.data.accuracy.score)}}</EListProgressItem>
+                    <EListProgressItem :percentage="answerData.data.completeness / 5">完整度：{{roundBy2(answerData.data.completeness)}}</EListProgressItem>
+                    <EListProgressItem :percentage="answerData.data.fluency / 5">流畅度：{{roundBy2(answerData.data.fluency)}}</EListProgressItem>
+                    <EListProgressItem :percentage="answerData.data.naturalness / 5">地道度：{{roundBy2(answerData.data.naturalness)}}</EListProgressItem>
+                </EList>
+                <EList v-if="(answerData.data.optimizedTranslation !== null && answerData.data.optimizedTranslation !== '') || (answerData.data.naturalTranslation !== null && answerData.data.naturalTranslation !== '')">
+                    <EListItem v-if="answerData.data.optimizedTranslation !== null && answerData.data.optimizedTranslation !== ''">
+                        <div class="translation">
+                            <div class="title">优化翻译</div>
+                            <div class="content">{{answerData.data.optimizedTranslation}}</div>
+                        </div>
+                    </EListItem>
+                    <EListItem>
+                        <div class="translation" v-if="answerData.data.naturalTranslation !== null && answerData.data.naturalTranslation !== ''">
+                            <div class="title">地道翻译</div>
+                            <div class="content">{{answerData.data.naturalTranslation}}</div>
+                        </div>
+                    </EListItem>
+                </EList>
+                <EList v-if="answerData.data.accuracy.analysis.data !== null && answerData.data.accuracy.analysis.data.length > 0">
+                    <EListItem v-for="obj in answerData.data.accuracy.analysis.data">
+                        <div class="mis">
+                            <div class="title">{{obj.title}}</div>
+                            <div class="subtitle">{{obj.position}}</div>
+                            <div class="content">{{obj.reason}}</div>
+                        </div>
+                    </EListItem>
+                </EList>
+            </div>
+        </div>
         <div class="nav">
             <div class="menuItem fc" @click="refreshSentence">
                 <div class="icon">refresh</div>
@@ -83,13 +83,11 @@
                         <th>句式</th><td><ESelect :data="['随机', '陈述', '感叹', '疑问', '祈使']" v-model:value="sentenceData.requestData.type"/></td>
                     </tr>
                     <tr class="settingsItem">
-                        <th>自定义</th><td><EInput v-model:value="sentenceData.requestData.custom"/></td>
+                        <th>自定义</th><td><EInput v-model:value="sentenceData.requestData.custom" placeholder="生成句子的自定义prompt"/></td>
                     </tr>
                 </table>
             </div>
         </EDrawer>
-        
-        
     </div>
 </template>
 
@@ -194,8 +192,9 @@ onMounted(async () => {
         font-size: 30px;
         font-weight: bold;
         background:
-            linear-gradient(to bottom, transparent, #fff 100%),
-            linear-gradient(to right, rgba(194, 194, 246, 0.7), rgba(212, 188, 239, 0.7), rgba(194, 194, 246, 0.7));
+            linear-gradient(to bottom, transparent, rgba(255, 255, 255, 1) 100%),
+            linear-gradient(to right, rgba(194, 194, 246, 0.9), rgba(212, 188, 239, 0.9), rgba(194, 194, 246, 0.9));
+            //linear-gradient(to bottom, rgba(194, 194, 246, 1) , transparent);
         backdrop-filter: blur(10px);
         .title {
         
@@ -218,6 +217,7 @@ onMounted(async () => {
             border: 2px solid rgb(213, 213, 213);
             border-radius: 10px;
             transition: border 0.2s;
+            resize: none;
             &:focus {
                 border: 2px solid #666666;
             }
